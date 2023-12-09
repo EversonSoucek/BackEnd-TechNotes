@@ -1,23 +1,35 @@
 const express = require('express')
-const res = require('express/lib/response')
 const app = express()
 const path = require('path')
-const { runInNewContext } = require('vm')
+const { logador } = require('./middleware/logador')
+const manipuladorErro = require('./middleware/manipuladorErros')
+const cookieParser = require('cookie-parser')
+const cors = require('cors' )
+const opcoesCors = require('./config/opcoesCors')
 const PORT = process.env.PORT || 3500
 
-app.use('/', express.static(path.join(__dirname,"/public")))
+app.use(logador)
+
+app.use(cors(opcoesCors))
+
+app.use(express.json())
+
+app.use(cookieParser())
+
+app.use('/', express.static(path.join(__dirname, '/public')))
 
 app.use('/', require('./routes/root'))
 
-app.all("*", (req,res) =>{
+app.all('*', (req, res) => {
     res.status(404)
-    if(req.accepts('html')) {
-        res.sendFile(path.join(__dirname, "views", '404.html'))
+    if (req.accepts('html')) {
+        res.sendFile(path.join(__dirname, 'views', '404.html'))
     } else if (req.accepts('json')) {
-        res.json({message: "404 not found"})
-    }else {
-        res.type('txt').send('404 not found')
+        res.json({ message: '404 Not Found' })
+    } else {
+        res.type('txt').send('404 Not Found')
     }
 })
 
+app.use(manipuladorErro)
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
