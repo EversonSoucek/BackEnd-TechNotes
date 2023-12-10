@@ -1,12 +1,19 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const path = require('path')
-const { logador } = require('./middleware/logador')
+const { logador,logaEventos } = require('./middleware/logador')
 const manipuladorErro = require('./middleware/manipuladorErros')
 const cookieParser = require('cookie-parser')
 const cors = require('cors' )
 const opcoesCors = require('./config/opcoesCors')
+const conectadb = require('./config/dbConn')
+const mongoose = require('mongoose')
 const PORT = process.env.PORT || 3500
+
+console.log(process.env.NODE_ENV);
+
+conectadb()
 
 app.use(logador)
 
@@ -32,4 +39,12 @@ app.all('*', (req, res) => {
 })
 
 app.use(manipuladorErro)
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+mongoose.connection.once("open", () =>{
+    console.log("Conectado no mongodb");
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+})
+
+mongoose.connection.on('error', err =>{
+    console.log(err);
+    logaEventos(`${err.no}: ${err.code}\t${err.syscall}\t${err.hostname}`, 'mongoErrLog.log')
+})
