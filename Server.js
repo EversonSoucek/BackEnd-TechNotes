@@ -25,7 +25,9 @@ app.use(cookieParser())
 
 app.use('/', express.static(path.join(__dirname, '/public')))
 
-app.use('/', require('./routes/root'))
+app.use('/', require('./routes/root')),
+
+app.use("/usuarios", require('./routes/usuarioRotas'))
 
 app.all('*', (req, res) => {
     res.status(404)
@@ -47,4 +49,4 @@ mongoose.connection.once("open", () =>{
 mongoose.connection.on('error', err =>{
     console.log(err);
     logaEventos(`${err.no}: ${err.code}\t${err.syscall}\t${err.hostname}`, 'mongoErrLog.log')
-})
+})  
