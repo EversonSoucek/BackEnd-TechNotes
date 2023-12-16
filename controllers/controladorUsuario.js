@@ -5,21 +5,21 @@ const bcrypt = require('bcrypt')
 
 
 const getUsuarios = asyncHandler(async (req, res) => {
-    const usuarios = await User.find().select('-password').lean()
-    if (!usuarios) {
+    const usuarios = await Usuario.find().select('-password').lean()
+    if (!usuarios?.length) {
         return res.status(400).json({ message: "Nenhum usuário achado" })
     }
     res.json(usuarios)
 })
 
 const postUsuario = asyncHandler(async (req, res) => {
-    const { nomeUsuarios, senha, cargo, } = req.body
+    const { nomeUsuario, senha, cargo, } = req.body
 
-    if (!username || !password || !Array.isArray(cargo) || !cargo.length) {
-        return res.status(400).json({ message: 'Todos campo são obrigatórios' })
+    if (!nomeUsuario || !senha || !Array.isArray(cargo) || !cargo.length) {
+        return res.status(400).json({ message: 'Todos os campos são obrigatórios' })
     }
 
-    const TemDuplicado = await Usuario.findOne({ username }).lean().exec()
+    const TemDuplicado = await Usuario.findOne({ nomeUsuario }).lean().exec()
 
     if (TemDuplicado) {
         return res.status(409).json({ message: 'Nome de usuário duplicado' })
@@ -30,9 +30,9 @@ const postUsuario = asyncHandler(async (req, res) => {
     onde vai acrescentar sequências aleatórios na senha para aumentar a segurança*/
 
 
-    const objetoUsuario = { usuario, "senha": senhaHashed, cargo }
+    const objetoUsuario = { nomeUsuario, "senha": senhaHashed, cargo }
 
-    const usuario = await User.create(objetoUsuario)
+    const usuario = await Usuario.create(objetoUsuario)
 
     if (usuario) {
         res.status(201).json({ message: `Novo usuário criado ${usuario}` })
@@ -45,14 +45,15 @@ const postUsuario = asyncHandler(async (req, res) => {
 const updateUsuario = asyncHandler(async (req, res) => {
     const { id, nomeUsuario, cargo, ativo, senha } = req.body
 
-    if (!id || nomeUsuario || Array.isArray(cargo) || !cargo.length || typeof ativo !== 'boolean') {
-        return res.status(400).json({ message: "Todos campos são obirgatórios" })
+    if (!id || !nomeUsuario || !Array.isArray(cargo) || !cargo.length || typeof ativo !== 'boolean') {
+        return res.status(400).json({ message: "Todos campos são obrigatórios" })
     }
-
+    
+    
     const usuario = await Usuario.findById(id).exec()
 
-    if (!user) {
-        return res.status.json({ message: 'Usuário não encontrado' })
+    if (!usuario) {
+        return res.status(400).json({ message: 'Usuário não encontrado' })
     }
 
     const temDuplicado = await Usuario.findOne({ nomeUsuario }).lean().exec()
@@ -67,7 +68,7 @@ const updateUsuario = asyncHandler(async (req, res) => {
     usuario.ativo = ativo
 
     if(senha) {
-        user.senha = await bcrypt.hash(senha,10)
+        usuario.senha = await bcrypt.hash(senha,10)
          /* O "10" ali é a quantidade de vezes que vai passar no round de salt,
         onde vai acrescentar sequências aleatórios na senha para aumentar a segurança*/
     }
@@ -85,10 +86,10 @@ const deleteUsuario = asyncHandler(async (req, res) => {
         return res.status(400).json({message:"Id é obrigatório"})
     }
 
-    const notas = await Nota.FindOne({ usuario:id}).lean.exec()
-    if (notes?.length) {
+    /*const nota = await Nota.findOne({ usuario:id}).lean().exec()
+    if (nota?.length) {
         return res.status(400).json({message:'Usuario tem notas designadas'})
-    }
+    }*/
 
 const usuario = await Usuario.findById(id).exec()
 
@@ -96,9 +97,9 @@ if (!usuario) {
     return res.status(400).json({message:"Usuario não encontrado"})
 }
 
-const resultado = await Usuario.deleteOne()
+const resultado = await usuario.deleteOne()
 
-const resposta = `Nome de usuario ${resultado.nomeUsuario} de ID ${result._id} deletado`
+const resposta = `Nome de usuario ${resultado.nomeUsuario} de ID ${resultado._id} deletado`
 
 res.json(resposta)
 
@@ -110,3 +111,6 @@ module.exports = {
     updateUsuario,
     deleteUsuario
 }
+
+
+//TERMINAR DE VER O VÍDEO
